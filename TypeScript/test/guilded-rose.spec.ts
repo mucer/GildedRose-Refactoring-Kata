@@ -1,39 +1,45 @@
 import { expect } from 'chai';
 import { Item, GildedRose, Names } from '../app/gilded-rose';
 
-class Builder {
-    private gildedRose = new GildedRose();
+class ItemTester {
+    item = new Item('default', 0, 0);
+    gildedRose = new GildedRose([this.item]);
 
-    add(name: string, sellIn: number, quality: number): this {
-        this.items.push(new Item(name, sellIn, quality));
+
+    name(name: string): this {
+        this.item.name = name;
         return this;
     }
 
-    update(): this {
-        this.gildedRose.updateQuality();
+    sellIn(sellIn: number): this {
+        this.item.sellIn = sellIn;
         return this;
     }
 
-    get items(): Item[] {
-        return this.gildedRose.items;
+    quality(quality: number): this {
+        this.item.quality = quality;
+        return this;
     }
 
-    get first(): Item {
-        return this.items[0];
+    updates(days: number) {
+        const updates: { sellIn: number, quality: number }[] = [];
+        for (let i = 0; i < days; i++) {
+            this.gildedRose.updateQuality();
+            updates.push({ sellIn: this.item.sellIn, quality: this.item.quality });
+        }
+        return updates;
     }
 }
 
 describe('Gilded Rose', () => {
-    let builder: Builder;
+    let tester: ItemTester;
     beforeEach(() => {
-        builder = new Builder();
+        tester = new ItemTester();
     });
 
     it('should not change item without update', () => {
-        builder.add('foo', 0, 0);
-
-        expect(builder.first).to.eql({
-            name: 'foo',
+        expect(tester.item).to.eql({
+            name: 'default',
             sellIn: 0,
             quality: 0
         });
@@ -41,50 +47,59 @@ describe('Gilded Rose', () => {
 
     describe('Default Items', () => {
         it('should decrease sellIn and quality', () => {
-            builder
-                .add('foo', 2, 2)
-                .update();
+            tester
+                .sellIn(1)
+                .quality(1);
 
-            expect(builder.first).to.eql({
-                name: 'foo',
-                sellIn: 1,
-                quality: 1
-            })
+            expect(tester.updates(1)).to.eql([
+                { sellIn: 0, quality: 0 }
+            ])
         });
 
         it('should decrease sellIn below 0, but not quality', () => {
-            builder
-                .add('foo', 0, 0)
-                .update();
+            tester
+                .sellIn(1)
+                .quality(1);
 
-            expect(builder.first.sellIn).to.eq(-1);
-            expect(builder.first.quality).to.eq(0);
+            expect(tester.updates(2)).to.eql([
+                { sellIn: 0, quality: 0 },
+                { sellIn: -1, quality: 0 }
+            ]);
         });
 
         it('should decrease quality by 2 if sellIn is 0', () => {
-            builder
-            .add('foo', 0, 10)
-            .update();
+            tester
+                .sellIn(1)
+                .quality(3);
 
-            expect(builder.first.quality).to.eq(8);
+            expect(tester.updates(2)).to.eql([
+                { sellIn: 0, quality: 2 },
+                { sellIn: -1, quality: 0 }
+            ]);
         });
     });
 
     describe('"Aged Brie" Items', () => {
         it('should increase quality on update', () => {
-            builder
-            .add(Names.AGED_BRIE, 0, 0)
-            .update();
+            tester
+                .name(Names.AGED_BRIE);
 
-            expect(builder.first.quality).to.eq(1);
+            expect(tester.updates(1)).to.eql([
+                { sellIn: -1, quality: 1 }
+            ]);
         });
 
         it('max quality should be 50', () => {
-            builder
-            .add(Names.AGED_BRIE, 0, 50)
-            .update();
+            tester
+                .name(Names.AGED_BRIE)
+                .sellIn(2)
+                .quality(48);
 
-            expect(builder.first.quality).to.eq(50);
+            expect(tester.updates(3)).to.eql([
+                { sellIn: 1, quality: 49 },
+                { sellIn: 0, quality: 50 },
+                { sellIn: -1, quality: 50 }
+            ]);
         });
     });
 });
