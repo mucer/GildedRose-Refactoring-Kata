@@ -7,22 +7,23 @@
     "precompile": "rimraf app/**/*.js test/**/*.js",
     "compile": "tsc",
     "pretest": "rimraf app/**/*.js test/**/*.js",
-    "test": "nyc mocha"
+    "test": "nyc mocha",
+    "test:watch": "mocha --watch"
   },
   "author": "paucls",
   "homepage": "https://github.com/paucls/typescript-mocha-kata-seed",
   "license": "ISC",
   "private": true,
   "devDependencies": {
-    "@types/chai": "~3.5.2",
-    "@types/mocha": "~2.2.41",
+    "@types/chai": "~4.1.3",
+    "@types/mocha": "~5.2.0",
     "@types/node": "~7.0.18",
-    "chai": "~3.5.0",
-    "mocha": "~3.2.0",
+    "chai": "~4.1.2",
+    "mocha": "~5.1.1",
     "nyc": "~11.0.3",
     "rimraf": "~2.5.2",
     "ts-node": "~3.1.0",
-    "typescript": "~2.2.0"
+    "typescript": "~2.8.3"
   },
   "nyc": {
     "extension": [
@@ -41,4 +42,3 @@
     ]
   }
 }
-
